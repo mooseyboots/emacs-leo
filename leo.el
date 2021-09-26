@@ -381,7 +381,7 @@ Each contains two sides, or results in a pair of languages."
 (defun leo--print-translation (results word similar)
   "Format and print translation RESULTS.
 WORD is the search term, SIMILAR is a list of suggestions to display if results are nil."
-    (with-current-buffer (get-buffer " *leo*")
+    (with-current-buffer (get-buffer "*leo*")
       (if (null results) ;nil
           (leo--did-you-mean word similar)
         (mapcar (lambda (x)
@@ -406,7 +406,7 @@ WORD is the search term, SIMILAR is a list of suggestions to display if results 
            (teaser
             (propertize (nth 2 (car forum-posts))
                         'face 'leo-auxiliary-face)))
-      (with-current-buffer (get-buffer " *leo*")
+      (with-current-buffer (get-buffer "*leo*")
         (insert
          (concat
           post-title
@@ -477,7 +477,7 @@ Used if `leo--print-translation' for WORD has no results. Results are links to s
       "\n\nHit 't' to search again.\n\n"))))
 
 (defun leo--make-buttons ()
-  (with-current-buffer (get-buffer " *leo*")
+  (with-current-buffer (get-buffer "*leo*")
     (let ((inhibit-read-only t))
       (save-excursion
         (goto-char (point-min))
@@ -500,14 +500,14 @@ Used if `leo--print-translation' for WORD has no results. Results are links to s
                                '(face leo-match-face)))))))
 
 (defun leo--print-results-buffer-heading (word)
-  (with-current-buffer (get-buffer " *leo*")
+  (with-current-buffer (get-buffer "*leo*")
     (insert
      (propertize
       (concat "leo.de search results for " word ":\n\n")
       'face 'leo-search-and-forum-face))))
 
 (defun leo--print-results-buffer-forum-heading (word)
-    (with-current-buffer (get-buffer " *leo*")
+    (with-current-buffer (get-buffer "*leo*")
       (insert
        (propertize
         (concat "leo.de forum results for " word ":\n\n")
@@ -517,14 +517,14 @@ Used if `leo--print-translation' for WORD has no results. Results are links to s
   "Print translation RESULTS and FORUMS in temporary buffer.
 The search term WORD is propertized in results.
 SIMILAR is a list of suggestions to display if there are no results."
-  (with-output-to-temp-buffer " *leo*" ; temp-buffer-show-hook makes it help-mode
+  (with-output-to-temp-buffer "*leo*" ; temp-buffer-show-hook makes it help-mode
     (leo--print-results-buffer-heading word)
     (leo--print-translation results word similar)
     (leo--print-results-buffer-forum-heading word)
     (leo--print-forums forums))
   ;; make rly sure we are in correct buffer
   ;; before we set do any keymapping
-  (with-current-buffer (get-buffer " *leo*")
+  (with-current-buffer (get-buffer "*leo*")
     (leo--make-buttons)
     (leo--propertize-search-term-in-results word)
     ;; hack to not ruin help-mode bindings, till we have a minor mode:
@@ -534,7 +534,7 @@ SIMILAR is a list of suggestions to display if there are no results."
     (when (require 'dictcc nil :noerror)
       (local-set-key (kbd "c") 'leo--search-term-with-dictcc))
     (setq leo--results-info `(term ,word)))
-  (if (not (equal (buffer-name (current-buffer)) " *leo*"))
+  (if (not (equal (buffer-name (current-buffer)) "*leo*"))
       (other-window 1)))
 
 (defun leo--translate (lang word)
