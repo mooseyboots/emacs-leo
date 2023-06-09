@@ -22,7 +22,7 @@ In the results buffer:
 - `d` to browse the results in [duden.de](https://www.duden.de/)
 - `l` to browse the results in [linguee.de](https://www.linguee.de)
 - and `c` to search the same term with [dictcc.el](https://github.com/martenlienen/dictcc.el) if it's installed.
-
+- `?` to view these commands.
 
 Links to forum results are also displayed. It is better to view these externally, which you can do by `C-u RET` with point on an entry. 
 
