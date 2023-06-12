@@ -57,6 +57,14 @@
 (when (require 'dictcc nil :noerror)
   (declare-function dictcc "dictcc"))
 
+(when (require 'reverso nil :no-error)
+  (declare-function reverso--translate "reverso")
+  (declare-function reverso--translate-render "reverso")
+  (declare-function reverso--with-buffer "reverso"))
+
+(when (require 'wordreference nil :no-error)
+  (declare-function wordreference-search "wordreference"))
+
 (when (require 'helm-dictionary nil :noerror)
   (declare-function helm-dictionary "helm-dictionary")
   (defvar helm-dictionary-database)
@@ -181,6 +189,8 @@ agent."
     (define-key map (kbd "d") #'leo-browse-url-duden)
     (when (require 'reverso nil :no-error)
       (define-key map (kbd "r") #'leo-browse-term-reverso))
+    (when (require 'wordreference nil :no-error)
+      (define-key map (kbd "w") #'leo-search-in-wordreference))
     map)
   "Keymap for leo mode.")
 
@@ -861,28 +871,30 @@ with a prefix arguemnt."
 (defun leo-search-in-helm-dictionary-de ()
   "Search for current query in `helm-dictionary'."
   (interactive)
-  (let ((query (concat "\\b"
-                       (plist-get leo--results-info 'term)
+  (let ((query (concat "\\b" (plist-get leo--results-info 'term)
                        "\\b")))
     (helm-dictionary leo-helm-dictionary-name query t)))
 
-(when (require 'reverso nil :no-error)
-  (declare-function reverso--translate "reverso")
-  (declare-function reverso--translate-render "reverso")
-  (declare-function reverso--with-buffer "reverso")
 
-  (defun leo-browse-term-reverso ()
-    "Search for current term with reverso.com"
-    (interactive)
-    (let* ((query (plist-get leo--results-info 'term)))
-      (reverso--translate
-       query
-       'english
-       'german
-       (lambda (data)
-         (reverso--with-buffer
-           (reverso--translate-render query data)))))))
+(defun leo-browse-term-reverso ()
+  "Search for current term with reverso.com."
+  (interactive)
+  (let* ((query (plist-get leo--results-info 'term)))
+    (reverso--translate
+     query
+     'english
+     'german
+     (lambda (data)
+       (reverso--with-buffer
+         (reverso--translate-render query data))))))
 
+(defun leo-search-in-wordreference ()
+  "Search for current query in `wordreference.el'.
+You need to install it for this to work."
+  (interactive)
+  (let ((query (plist-get leo--results-info 'term))
+        (lang (plist-get leo--results-info 'lang)))
+    (wordreference-search nil query "de" lang)))
 
 (defun leo--translate-word-click-search (event)
   "Translate word on mouse click EVENT between `leo-language' and German."
