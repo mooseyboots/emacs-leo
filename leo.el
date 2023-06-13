@@ -73,6 +73,9 @@
 It must match the key of one of the dictionaries in
 `helm-dictionary-database'."))
 
+(when (require 'wiktionary-bro nil :no-error)
+  (declare-function wiktionary-bro "wiktionary-bro"))
+
 (when (require 'pdf-tools nil :no-error)
   (declare-function pdf-view-active-region-text "pdf-view"))
 
@@ -191,6 +194,8 @@ agent."
       (define-key map (kbd "r") #'leo-browse-term-reverso))
     (when (require 'wordreference nil :no-error)
       (define-key map (kbd "w") #'leo-search-in-wordreference))
+    (when (require 'wiktionary-bro nil :no-error)
+      (define-key map (kbd "k") #'leo-browse-term-wiktionary-bro))
     map)
   "Keymap for leo mode.")
 
@@ -210,7 +215,9 @@ agent."
    [("h" "search with helm dict" leo-search-in-helm-dictionary-de)
     ("d" "search with duden" leo-browse-url-duden)
     ("r" "search with reverso" leo-browse-term-reverso)
-    ("<" "left side only" leo-translate-left-side-only)
+    ("w" "search with wordreference.el" leo-search-in-wordreference)
+    ("k" "search with wikionary-bro" leo-browse-term-wiktionary-bro)]
+   [("<" "left side only" leo-translate-left-side-only)
     (">" "right side only" leo-translate-right-side-only)]])
 
 (defvar leo-result-search-map
@@ -895,6 +902,12 @@ You need to install it for this to work."
   (let ((query (plist-get leo--results-info 'term))
         (lang (plist-get leo--results-info 'lang)))
     (wordreference-search nil query "de" lang)))
+
+(defun leo-browse-term-wiktionary-bro ()
+  "Look up current term using `wiktionary-bro.el'."
+  (interactive)
+  (let ((term (plist-get leo--results-info 'term)))
+    (wiktionary-bro term)))
 
 (defun leo--translate-word-click-search (event)
   "Translate word on mouse click EVENT between `leo-language' and German."
