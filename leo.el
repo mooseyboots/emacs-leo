@@ -1009,9 +1009,10 @@ Results are links to searches for themselves."
   (let* ((sim-sides (xml-get-children similar 'side))
          (sim-word-nodes (leo--map-get-children sim-sides 'word))
          (sim-word-strings
-          (mapcar (lambda (x)
-                    (car (xml-node-children x)))
-                  sim-word-nodes))
+          (when sim-word-nodes
+            (mapcar (lambda (x)
+                      (car (xml-node-children x)))
+                    sim-word-nodes)))
          (sim-words-propertized
           (when sim-word-strings
             (leo--propertize-similars sim-word-strings))))
@@ -1128,7 +1129,8 @@ SIDE is a string of either \"left\" or \"right\"."
 (aio-defun leo--translate (lang word &optional pos side)
   "Translate WORD between LANG and German.
 SIDE is the side to search in, either \"left\" or \"right\"."
-  (let* ((xml (aio-await (leo--parse-xml (leo--generate-url lang word pos side))))
+  (let* ((xml (aio-await (leo--parse-xml
+                          (leo--generate-url lang word pos side))))
          (section-list (car (leo--get-result-section-list (car xml))))
          ;; similar terms to offer if no results:
          (similar-list (car (leo--get-result-similar-list (car xml)))))
