@@ -314,8 +314,8 @@ Returns 16 results per POS."
           ;; FIXME: how to handle multibyte chars in response:
           (toggle-enable-multibyte-characters)
           (toggle-enable-multibyte-characters)
-	      ;; (url-insert-file-contents url)
-	      (xml-parse-region (search-forward "\n\n")
+	  ;; (url-insert-file-contents url)
+	  (xml-parse-region (search-forward "\n\n")
                             (point-max)))))))
 
 (defun leo--map-get-children (seq child)
