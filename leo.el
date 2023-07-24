@@ -261,7 +261,10 @@ Used to build the URL for external browsing to leo.de.
 And, reversed, to prompt for language choice when `leo-translate-word'
 and `leo-translate-at-point' are called with a prefix arg.")
 
-(defvar-local leo--results-info nil
+(defvar leo-async-timeout 5
+  "A timeout for async requests to leo.de, in seconds.")
+
+(defvar leo--results-info nil
   "Information about the current results from a leo search.
 Used to store search term for `leo-browse-url-results', and
 language searched for `leo--translate-word-return-search' or
@@ -308,7 +311,15 @@ Returns 16 results per POS."
             (zlib-decompress-region start (point-max))
             (set-buffer-multibyte t)
             (xml-parse-region start (point-max))))
-      (let ((response (aio-await (aio-url-retrieve url))))
+      (let* ((promises (list (aio-with-async
+                               (aio-await (aio-url-retrieve url)))
+                             (aio-timeout leo-async-timeout)))
+             (select (aio-make-select promises))
+             (response
+              ;; whichever first, timeout or response:
+                 (aio-await
+                  (aio-await
+                   (aio-select select)))))
         (with-current-buffer (cdr response)
           (goto-char (point-min))
           ;; FIXME: how to handle multibyte chars in response:
