@@ -54,6 +54,7 @@
 (require 'url-cache)
 (require 'text-property-search)
 (require 'transient)
+(require 'rfc6068)
 (when (require 'dictcc nil :noerror)
   (declare-function dictcc "dictcc"))
 
@@ -241,8 +242,8 @@ agent."
 (defvar leo-forums-map
   (let ((map (copy-keymap shr-map)))
     (define-key map [mouse-2] #'leo-shr-browse-url)
-    (define-key map (kbd "RET") #'leo-shr-browse-url)
-    ;; (define-key map (kbd "b") #'shr-browse-url)
+    (define-key map (kbd "RET") #'leo-render-forum-entry)
+    (define-key map (kbd "b") #'leo-shr-browse-url)
     ;; override shr-browse-url, which is already RET:
     (define-key map (kbd "v") #'leo-paste-to-search)
     map))
@@ -997,6 +998,29 @@ Word or phrase at point is determined by button text property."
   (interactive)
   (goto-char (point-max))
   (leo-previous-heading))
+
+;; TODO: remove <div class="card-content"> before rendering
+(defun leo-render-forum-entry ()
+  "Render the forum entry at point in a temporary buffer."
+  (interactive)
+  (let* ((url (get-text-property (point) 'shr-url))
+         (html (url-retrieve-synchronously url))
+         (section (with-current-buffer html
+                    (save-match-data
+                      (buffer-substring
+                       (progn (re-search-forward "<section")
+                              (match-beginning 0))
+                       (re-search-forward "</section>")))))
+         (unhex (rfc6068-unhexify-string section)))
+    ;; (dom (with-temp-buffer
+    ;; (insert section)
+    ;; (libxml-parse-html-region)))
+    ;; (tables (dom-by-tag dom 'table)))
+    (with-temp-buffer
+      (insert unhex)
+      (switch-to-buffer (current-buffer))
+      (shr-render-buffer (current-buffer))
+      (view-mode))))
 
 (defun leo--propertize-similars (similars)
   "Propertize list of SIMILARS."
