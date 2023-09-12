@@ -201,7 +201,7 @@ agent."
   "Keymap for leo mode.")
 
 (transient-define-prefix leo-dispatch ()
-  "leo results commands"
+  "Leo results commands."
   ["leo results commands"
    [("TAB" "next button" forward-button)
     ("<backtab>" "prev button" backward-button)
@@ -482,7 +482,7 @@ Optionally add from START to END."
                        match))
 
 (defun leo--add-term-prop-to-match (match term &optional start end)
-  "Add text property 'term TERM to string MATCH."
+  "Add text property term TERM to string MATCH."
   (add-text-properties (or start (match-beginning 0)) (or end (match-end 0))
                        (list 'term term)
                        match))
