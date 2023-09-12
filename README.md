@@ -12,15 +12,16 @@ In the results buffer:
 - click on a word to search for it
 - `<tab>` to a word or phrase then hit `<return>` to search for it
 - `t` or `s` to search again
-- `v` to instantly search for the most recent kill ring item (paste and search).
+- `v` to instantly search for the most recent kill ring item (paste and search)
 - `C-u t` to search again and choose your language
-- `,` and `.` to go to the previous/next part of speech heading.
+- `,` and `.` to go to the previous/next part of speech heading
 - `f` to jump to forum results
-- click on a part of speech heading to view more results of only that type.
-- `<` and `>` to limit search to source/target language.
+- click on a part of speech heading to view more results of only that type
+- `<` and `>` to limit search to source/target language
 - `b` to view results in external browser
-- `d` to browse the results in [duden.de](https://www.duden.de/)
-- `l` to browse the results in [linguee.de](https://www.linguee.de)
+- `d` to look up the term on [duden.de](https://www.duden.de/)
+- `l` to look up the term on [linguee.de](https://www.linguee.de)
+- `k` to look up the term in [wiktionary-bro](https://github.com/agzam/wiktionary-bro.el) if installed
 - and `c` to search the same term with [dictcc.el](https://github.com/martenlienen/dictcc.el) if it's installed.
 - `?` to view these commands.
 
