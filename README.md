@@ -24,7 +24,7 @@ In the results buffer:
 - and `c` to search the same term with [dictcc.el](https://github.com/martenlienen/dictcc.el) if it's installed.
 - `?` to view these commands.
 
-Links to forum results are also displayed. It is better to view these externally, which you can do by `C-u RET` with point on an entry. 
+Links to forum results are also displayed. If you click or hit enter on one, it will be rendered in a basic way using `shr`. To view it in your browser, hit `b`.
 
 If no results are returned, a list of suggestions is displayed which are also click (or tab/return) to search.
 
