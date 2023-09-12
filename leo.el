@@ -1017,10 +1017,11 @@ Word or phrase at point is determined by button text property."
     ;; (libxml-parse-html-region)))
     ;; (tables (dom-by-tag dom 'table)))
     (with-temp-buffer
-      (insert unhex)
-      (switch-to-buffer (current-buffer))
-      (shr-render-buffer (current-buffer))
-      (view-mode))))
+      (let ((inhibit-read-only t))
+        (insert unhex)
+        (switch-to-buffer (current-buffer))
+        (shr-render-buffer (current-buffer))
+        (view-mode)))))
 
 (defun leo--propertize-similars (similars)
   "Propertize list of SIMILARS."
