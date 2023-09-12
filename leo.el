@@ -241,7 +241,7 @@ agent."
 
 (defvar leo-forums-map
   (let ((map (copy-keymap shr-map)))
-    (define-key map [mouse-2] #'leo-shr-browse-url)
+    (define-key map [mouse-2] #'leo-render-forum-entry)
     (define-key map (kbd "RET") #'leo-render-forum-entry)
     (define-key map (kbd "b") #'leo-shr-browse-url)
     ;; override shr-browse-url, which is already RET:
