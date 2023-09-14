@@ -237,8 +237,9 @@ agent."
 
 (defvar leo-inflexion-table-map
   (let ((map (make-sparse-keymap)))
-    (define-key map [mouse-2] #'leo-shr-browse-url)
-    (define-key map (kbd "RET") #'leo-shr-browse-url)
+    (define-key map [mouse-2] #'leo-render-inflex-tbl)
+    (define-key map (kbd "RET") #'leo-render-inflex-tbl)
+    (define-key map (kbd "b") #'leo-shr-browse-url)
     map))
 
 (defvar leo-forums-map
@@ -1030,25 +1031,44 @@ Word or phrase at point is determined by button text property."
 (defun leo-render-forum-entry ()
   "Render the forum entry at point in a temporary buffer."
   (interactive)
-  (let* ((url (get-text-property (point) 'shr-url))
-         (html (url-retrieve-synchronously url))
-         (section (with-current-buffer html
-                    (save-match-data
-                      (buffer-substring
-                       (progn (re-search-forward "<section")
-                              (match-beginning 0))
-                       (re-search-forward "</section>")))))
-         (unhex (rfc6068-unhexify-string section)))
-    ;; (dom (with-temp-buffer
-    ;; (insert section)
-    ;; (libxml-parse-html-region)))
-    ;; (tables (dom-by-tag dom 'table)))
-    (with-temp-buffer
-      (let ((inhibit-read-only t))
-        (insert unhex)
-        (switch-to-buffer (current-buffer))
-        (shr-render-buffer (current-buffer))
-        (view-mode)))))
+  (leo-render-html "<section")) ; "</section>"))
+
+(defun leo-render-inflex-tbl ()
+  "Render inflection table at point in a temporary buffer."
+  (interactive)
+  (leo--render-html "<div class=\"p-large\">"))
+
+(defun leo--render-html (regex)
+  "Fetch `shr-url' at point and render html in a temporary buffer.
+REGEX should match the opening HTML of the tag to render."
+  (if-let ((url (get-text-property (point) 'shr-url)))
+      (let* ((response (url-retrieve-synchronously url))
+             (html (with-current-buffer response
+                     (re-search-forward "\n\n")
+                     (buffer-substring-no-properties (point) (point-max))))
+             ;; with-temp-buffer breaks forward-sexp in html:
+             (section (with-current-buffer (get-buffer-create "*leo-html*")
+                        (switch-to-buffer (current-buffer))
+                        (erase-buffer)
+                        (insert html)
+                        (web-mode) ; so forward-sexp works
+                        (goto-char (point-min))
+                        (save-match-data
+                          (buffer-substring-no-properties
+                           (progn (re-search-forward regex)
+                                  (match-beginning 0))
+                           (progn (goto-char (match-beginning 0))
+                                  (forward-sexp)
+                                  (point))))))
+             (unhex (rfc6068-unhexify-string section)))
+        (kill-buffer "*leo-html*")
+        (with-temp-buffer
+          (let ((inhibit-read-only t))
+            (insert unhex)
+            (switch-to-buffer (current-buffer))
+            (shr-render-buffer (current-buffer))
+            (view-mode))))
+    (message "No link to fetch at point?")))
 
 (defun leo--propertize-similars (similars)
   "Propertize list of SIMILARS."
