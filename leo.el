@@ -175,6 +175,8 @@ agent."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "TAB") #'forward-button)
     (define-key map (kbd "<backtab>") #'backward-button)
+    (define-key map (kbd "n") #'leo-next-entry)
+    (define-key map (kbd "p") #'leo-previous-entry)
     (define-key map (kbd "t") #'leo-translate-word)
     (define-key map (kbd "s") #'leo-translate-word)
     (define-key map (kbd "b") #'leo-browse-url-results)
@@ -748,21 +750,23 @@ POS is the part of speech of the side."
   (let* ((words-list (cdr (assoc 'words-list side)))
          (result (cdr (assoc 'result side)))
          (table (cdr (assoc 'table side))))
-    (insert
-     (concat
-      (leo--propertize-inflexion-table table words-list)
-      (when result
-        (leo--propertize-result-string result words-list))))))
+    (concat
+     (leo--propertize-inflexion-table table words-list)
+     (when result
+       (leo--propertize-result-string result words-list)))))
 
 (defun leo--print-single-entry (entry)
   "Print an ENTRY, consisting of two sides of a result."
-  (leo--print-single-side (car entry))
   (insert
-   "\n           "
-   (propertize "--> "
-               'face 'leo-auxiliary-face))
-  (leo--print-single-side (cadr entry))
-  (insert "\n\n"))
+   (propertize
+    (concat
+     (leo--print-single-side (car entry))
+     "\n           "
+     (propertize "--> "
+                 'face 'leo-auxiliary-face)
+     (leo--print-single-side (cadr entry)))
+    'leo-entry t)
+   "\n\n"))
 
 (defun leo--insert-section-heading (section-pos)
   "Insert and propertize SECTION-POS."
@@ -818,10 +822,11 @@ display if results are nil."
       (with-current-buffer (get-buffer "*leo*")
         (insert
          (concat
-          post-title
-          "\n"
-          teaser
           "\n\n"
+          (propertize
+           (concat post-title "\n"
+                   teaser)
+           'leo-entry t)
           (leo--print-forums (cdr forum-posts))))))))
 
 (defun leo-browse-url-results ()
@@ -993,6 +998,28 @@ Word or phrase at point is determined by button text property."
             (recenter-top-bottom 3))
         (message "No more headings.")))))
 
+(defun leo-next-entry ()
+  "Move point to the next entry or forum title."
+  (interactive)
+  (if-let ((pos (next-single-property-change (point)
+                                             'leo-entry)))
+      (progn
+        (goto-char pos)
+        (unless (get-text-property (point) 'leo-entry)
+          (leo-next-entry)))
+    (message "No next entry")))
+
+(defun leo-previous-entry ()
+  "Move point to the next entry or forum title."
+  (interactive)
+  (if-let ((pos (previous-single-property-change (point)
+                                                 'leo-entry)))
+      (progn
+        (goto-char pos)
+        (unless (get-text-property (point) 'leo-entry)
+          (leo-previous-entry)))
+    (message "No previous entry")))
+
 (defun leo-jump-to-forum-results ()
   "Jump to forum results."
   (interactive)
@@ -1114,7 +1141,7 @@ Results are links to searches for themselves."
   (with-current-buffer (get-buffer "*leo*")
     (insert
      (propertize
-      (concat "leo.de forum results for " word ":\n\n")
+      (concat "leo.de forum results for " word ":")
       'face 'leo-search-and-forum-face
       'heading t))))
 
