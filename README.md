@@ -10,6 +10,7 @@ Results are sorted by part of speech, and display all additional information abo
 In the results buffer:
 
 - click on a word to search for it
+- `n` and `p` to navigate to next/previous entry
 - `<tab>` to a word or phrase then hit `<return>` to search for it
 - `t` or `s` to search again
 - `v` to instantly search for the most recent kill ring item (paste and search)
