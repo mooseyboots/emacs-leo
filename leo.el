@@ -175,6 +175,8 @@ agent."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "TAB") #'forward-button)
     (define-key map (kbd "<backtab>") #'backward-button)
+    (define-key map (kbd "n") #'leo-next-entry)
+    (define-key map (kbd "p") #'leo-previous-entry)
     (define-key map (kbd "t") #'leo-translate-word)
     (define-key map (kbd "s") #'leo-translate-word)
     (define-key map (kbd "b") #'leo-browse-url-results)
@@ -235,8 +237,9 @@ agent."
 
 (defvar leo-inflexion-table-map
   (let ((map (make-sparse-keymap)))
-    (define-key map [mouse-2] #'leo-shr-browse-url)
-    (define-key map (kbd "RET") #'leo-shr-browse-url)
+    (define-key map [mouse-2] #'leo-render-inflex-tbl)
+    (define-key map (kbd "RET") #'leo-render-inflex-tbl)
+    (define-key map (kbd "b") #'leo-shr-browse-url)
     map))
 
 (defvar leo-forums-map
@@ -748,21 +751,23 @@ POS is the part of speech of the side."
   (let* ((words-list (cdr (assoc 'words-list side)))
          (result (cdr (assoc 'result side)))
          (table (cdr (assoc 'table side))))
-    (insert
-     (concat
-      (leo--propertize-inflexion-table table words-list)
-      (when result
-        (leo--propertize-result-string result words-list))))))
+    (concat
+     (leo--propertize-inflexion-table table words-list)
+     (when result
+       (leo--propertize-result-string result words-list)))))
 
 (defun leo--print-single-entry (entry)
   "Print an ENTRY, consisting of two sides of a result."
-  (leo--print-single-side (car entry))
   (insert
-   "\n           "
-   (propertize "--> "
-               'face 'leo-auxiliary-face))
-  (leo--print-single-side (cadr entry))
-  (insert "\n\n"))
+   (propertize
+    (concat
+     (leo--print-single-side (car entry))
+     "\n           "
+     (propertize "--> "
+                 'face 'leo-auxiliary-face)
+     (leo--print-single-side (cadr entry)))
+    'leo-entry t)
+   "\n\n"))
 
 (defun leo--insert-section-heading (section-pos)
   "Insert and propertize SECTION-POS."
@@ -818,10 +823,11 @@ display if results are nil."
       (with-current-buffer (get-buffer "*leo*")
         (insert
          (concat
-          post-title
-          "\n"
-          teaser
           "\n\n"
+          (propertize
+           (concat post-title "\n"
+                   teaser)
+           'leo-entry t)
           (leo--print-forums (cdr forum-posts))))))))
 
 (defun leo-browse-url-results ()
@@ -993,6 +999,28 @@ Word or phrase at point is determined by button text property."
             (recenter-top-bottom 3))
         (message "No more headings.")))))
 
+(defun leo-next-entry ()
+  "Move point to the next entry or forum title."
+  (interactive)
+  (if-let ((pos (next-single-property-change (point)
+                                             'leo-entry)))
+      (progn
+        (goto-char pos)
+        (unless (get-text-property (point) 'leo-entry)
+          (leo-next-entry)))
+    (message "No next entry")))
+
+(defun leo-previous-entry ()
+  "Move point to the next entry or forum title."
+  (interactive)
+  (if-let ((pos (previous-single-property-change (point)
+                                                 'leo-entry)))
+      (progn
+        (goto-char pos)
+        (unless (get-text-property (point) 'leo-entry)
+          (leo-previous-entry)))
+    (message "No previous entry")))
+
 (defun leo-jump-to-forum-results ()
   "Jump to forum results."
   (interactive)
@@ -1003,25 +1031,44 @@ Word or phrase at point is determined by button text property."
 (defun leo-render-forum-entry ()
   "Render the forum entry at point in a temporary buffer."
   (interactive)
-  (let* ((url (get-text-property (point) 'shr-url))
-         (html (url-retrieve-synchronously url))
-         (section (with-current-buffer html
-                    (save-match-data
-                      (buffer-substring
-                       (progn (re-search-forward "<section")
-                              (match-beginning 0))
-                       (re-search-forward "</section>")))))
-         (unhex (rfc6068-unhexify-string section)))
-    ;; (dom (with-temp-buffer
-    ;; (insert section)
-    ;; (libxml-parse-html-region)))
-    ;; (tables (dom-by-tag dom 'table)))
-    (with-temp-buffer
-      (let ((inhibit-read-only t))
-        (insert unhex)
-        (switch-to-buffer (current-buffer))
-        (shr-render-buffer (current-buffer))
-        (view-mode)))))
+  (leo-render-html "<section")) ; "</section>"))
+
+(defun leo-render-inflex-tbl ()
+  "Render inflection table at point in a temporary buffer."
+  (interactive)
+  (leo--render-html "<div class=\"p-large\">"))
+
+(defun leo--render-html (regex)
+  "Fetch `shr-url' at point and render html in a temporary buffer.
+REGEX should match the opening HTML of the tag to render."
+  (if-let ((url (get-text-property (point) 'shr-url)))
+      (let* ((response (url-retrieve-synchronously url))
+             (html (with-current-buffer response
+                     (re-search-forward "\n\n")
+                     (buffer-substring-no-properties (point) (point-max))))
+             ;; with-temp-buffer breaks forward-sexp in html:
+             (section (with-current-buffer (get-buffer-create "*leo-html*")
+                        (switch-to-buffer (current-buffer))
+                        (erase-buffer)
+                        (insert html)
+                        (web-mode) ; so forward-sexp works
+                        (goto-char (point-min))
+                        (save-match-data
+                          (buffer-substring-no-properties
+                           (progn (re-search-forward regex)
+                                  (match-beginning 0))
+                           (progn (goto-char (match-beginning 0))
+                                  (forward-sexp)
+                                  (point))))))
+             (unhex (rfc6068-unhexify-string section)))
+        (kill-buffer "*leo-html*")
+        (with-temp-buffer
+          (let ((inhibit-read-only t))
+            (insert unhex)
+            (switch-to-buffer (current-buffer))
+            (shr-render-buffer (current-buffer))
+            (view-mode))))
+    (message "No link to fetch at point?")))
 
 (defun leo--propertize-similars (similars)
   "Propertize list of SIMILARS."
@@ -1114,7 +1161,7 @@ Results are links to searches for themselves."
   (with-current-buffer (get-buffer "*leo*")
     (insert
      (propertize
-      (concat "leo.de forum results for " word ":\n\n")
+      (concat "leo.de forum results for " word ":")
       'face 'leo-search-and-forum-face
       'heading t))))
 
