@@ -802,7 +802,7 @@ display if results are nil."
 
 (defun leo--propertize-forum-title (forum-posts url)
   "Propertize POST-TITLE for FORUM-POSTS and URL."
-  (propertize (caar forum-posts)
+  (propertize (or (caar forum-posts) "*") ; handle nil title
               'button t
               'follow-link t
               'shr-url url
@@ -822,13 +822,12 @@ display if results are nil."
                                'face 'leo-auxiliary-face)))
       (with-current-buffer (get-buffer "*leo*")
         (insert
-         (concat
-          "\n\n"
-          (propertize
-           (concat post-title "\n"
-                   teaser)
-           'leo-entry t)
-          (leo--print-forums (cdr forum-posts))))))))
+         (concat "\n\n"
+                 (propertize
+                  (concat post-title "\n"
+                          teaser)
+                  'leo-entry t)))
+        (leo--print-forums (cdr forum-posts))))))
 
 (defun leo-browse-url-results ()
   "Open the current results for LANG and WORD in external browser.
