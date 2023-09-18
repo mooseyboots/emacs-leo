@@ -1030,7 +1030,7 @@ Word or phrase at point is determined by button text property."
 (defun leo-render-forum-entry ()
   "Render the forum entry at point in a temporary buffer."
   (interactive)
-  (leo-render-html "<section")) ; "</section>"))
+  (leo--render-html "<section")) ; "</section>"))
 
 (defun leo-render-inflex-tbl ()
   "Render inflection table at point in a temporary buffer."
