@@ -943,7 +943,10 @@ Word or phrase at point is determined by button text property."
                   leo-language)) ;fallback
         (text (buffer-substring-no-properties
                (progn
-                 (if (looking-back "[ \t\n]" nil) ; enter range if we tabbed here
+                 (if (or (eq (char-before) ? )
+                         (eq (char-before) ?\n)
+                         (eq (char-before) ?\t)) ; way faster than `looking-back'
+                     ;; (looking-back "[ \t\n]" nil) ; enter range if we tabbed here
                      (forward-char))
                  (previous-single-property-change (point) 'button)) ; range start
                (next-single-property-change (point) 'button))))
