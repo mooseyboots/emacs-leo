@@ -67,12 +67,12 @@
   (declare-function wordreference-search "wordreference"))
 
 (when (require 'helm-dictionary nil :noerror)
-  (declare-function helm-dictionary "helm-dictionary")
-  (defvar helm-dictionary-database)
-  (defvar leo-helm-dictionary-name "de-en"
-    "The name of the dictionary to use for `helm-dictionary' queries.
+  (declare-function helm-dictionary "helm-dictionary"))
+(defvar helm-dictionary-database)
+(defvar leo-helm-dictionary-name "de-en"
+  "The name of the dictionary to use for `helm-dictionary' queries.
 It must match the key of one of the dictionaries in
-`helm-dictionary-database'."))
+`helm-dictionary-database'.")
 
 (when (require 'wiktionary-bro nil :no-error)
   (declare-function wiktionary-bro "wiktionary-bro"))
