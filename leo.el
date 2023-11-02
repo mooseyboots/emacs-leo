@@ -881,16 +881,28 @@ with a prefix arguemnt."
                          query-final))))
 
 (defun leo-browse-url-duden ()
-  "Search for current term in browser with Duden.de."
+  "Search for current term in browser with Duden.de.
+Only works for German terms."
   (interactive)
+  (leo-browse-url-term "https://www.duden.de/suchen/dudenonline/"))
+
+(defun leo-browse-term-dwds ()
+  "Search for current term in browser with dwds.de.
+Only works for German terms."
+  (interactive)
+  (leo-browse-url-term "https://www.dwds.de/?from=wb&q="))
+
+(defun leo-browse-url-term (url)
+  "Browse URL as a query for the current search term.
+If the current search is multiple terms, concatenate them with
+\"+\" as a separator.
+The query is concatenated to URL."
   (let* ((query (plist-get leo--results-info 'term))
          (query-split (split-string query " "))
          (query-final (if (not (> (length query-split) 1))
                           query
                         (string-join query-split "+"))))
-    (browse-url-generic (concat
-                         "https://www.duden.de/suchen/dudenonline/"
-                         query-final))))
+    (browse-url-generic (concat url query-final))))
 
 (defun leo-search-in-helm-dictionary-de ()
   "Search for current query in `helm-dictionary'."
@@ -898,7 +910,6 @@ with a prefix arguemnt."
   (let ((query (concat "\\b" (plist-get leo--results-info 'term)
                        "\\b")))
     (helm-dictionary leo-helm-dictionary-name query t)))
-
 
 (defun leo-browse-term-reverso ()
   "Search for current term with reverso.com."
