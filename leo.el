@@ -193,6 +193,7 @@ agent."
     (when (require 'helm-dictionary nil :noerror)
       (define-key map (kbd "h") #'leo-search-in-helm-dictionary-de))
     (define-key map (kbd "d") #'leo-browse-url-duden)
+    (define-key map (kbd "D") #'leo-browse-url-dwds)
     (when (require 'reverso nil :no-error)
       (define-key map (kbd "r") #'leo-browse-term-reverso))
     (when (require 'wordreference nil :no-error)
@@ -213,14 +214,15 @@ agent."
    [("s" "search again" leo-translate-word)
     ("b" "browse results" leo-browse-url-results)
     ("f" "jump to forums" leo-jump-to-forum-results)
-    ("c" "search with dictcc" leo-search-term-with-dictcc)
-    ("l" "search with linguee" leo-browse-url-linguee)]
+    ("c" "search with dictcc.el" leo-search-term-with-dictcc)
+    ("l" "browse on linguee" leo-browse-url-linguee)]
    [("h" "search with helm dict" leo-search-in-helm-dictionary-de)
-    ("d" "search with duden" leo-browse-url-duden)
-    ("r" "search with reverso" leo-browse-term-reverso)
+    ("d" "browse on duden" leo-browse-url-duden)
+    ("r" "search with reverso.el" leo-browse-term-reverso)
     ("w" "search with wordreference.el" leo-search-in-wordreference)
     ("k" "search with wikionary-bro" leo-browse-term-wiktionary-bro)]
-   [("<" "left side only" leo-translate-left-side-only)
+   [("D" "browse on dwds.de" leo-browse-term-dwds)
+    ("<" "left side only" leo-translate-left-side-only)
     (">" "right side only" leo-translate-right-side-only)]])
 
 (defvar leo-result-search-map
