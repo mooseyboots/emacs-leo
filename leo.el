@@ -888,7 +888,7 @@ Only works for German terms."
   (interactive)
   (leo-browse-url-term "https://www.duden.de/suchen/dudenonline/"))
 
-(defun leo-browse-term-dwds ()
+(defun leo-browse-url-dwds ()
   "Search for current term in browser with dwds.de.
 Only works for German terms."
   (interactive)
