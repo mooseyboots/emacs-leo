@@ -914,7 +914,8 @@ The query is concatenated to URL."
     (helm-dictionary leo-helm-dictionary-name query t)))
 
 (defun leo-browse-term-reverso ()
-  "Search for current term with reverso.com."
+  "Search for current term with reverso.el."
+  ;; FIXME: currently this errors unless we eval leo.el buffer:
   (interactive)
   (let* ((query (plist-get leo--results-info 'term)))
     (reverso--translate
@@ -1066,7 +1067,7 @@ REGEX should match the opening HTML of the tag to render."
                         (switch-to-buffer (current-buffer))
                         (erase-buffer)
                         (insert html)
-                        (web-mode) ; so forward-sexp works
+                        (mhtml-mode) ; so forward-sexp works
                         (goto-char (point-min))
                         (save-match-data
                           (buffer-substring-no-properties
