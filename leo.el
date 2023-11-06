@@ -1047,12 +1047,33 @@ Word or phrase at point is determined by button text property."
 (defun leo-render-forum-entry ()
   "Render the forum entry at point in a temporary buffer."
   (interactive)
-  (leo--render-html "<section")) ; "</section>"))
+  (leo--render-html "<section"))
+;;"<div class=\"wgt-content\""))
 
 (defun leo-render-inflex-tbl ()
   "Render inflection table at point in a temporary buffer."
   (interactive)
   (leo--render-html "<div class=\"p-large\">"))
+
+(require 'sgml-mode)
+
+(defun leo--get-html-section (html regex)
+  "Return HTML tree whose beginning matches REGEX."
+  (with-current-buffer (get-buffer-create "*leo-html*")
+    (switch-to-buffer (current-buffer))
+    (erase-buffer)
+    (insert html)
+    ;; (web-mode)
+    (mhtml-mode)
+    (goto-char (point-min))
+    (save-match-data
+      (buffer-substring-no-properties
+       (progn (re-search-forward regex)
+              (match-beginning 0))
+       (progn (goto-char (match-beginning 0))
+              ;; (forward-sexp)
+              (sgml-skip-tag-forward 1)
+              (point))))))
 
 (defun leo--render-html (regex)
   "Fetch `shr-url' at point and render html in a temporary buffer.
@@ -1063,19 +1084,7 @@ REGEX should match the opening HTML of the tag to render."
                      (re-search-forward "\n\n")
                      (buffer-substring-no-properties (point) (point-max))))
              ;; with-temp-buffer breaks forward-sexp in html:
-             (section (with-current-buffer (get-buffer-create "*leo-html*")
-                        (switch-to-buffer (current-buffer))
-                        (erase-buffer)
-                        (insert html)
-                        (mhtml-mode) ; so forward-sexp works
-                        (goto-char (point-min))
-                        (save-match-data
-                          (buffer-substring-no-properties
-                           (progn (re-search-forward regex)
-                                  (match-beginning 0))
-                           (progn (goto-char (match-beginning 0))
-                                  (forward-sexp)
-                                  (point))))))
+             (section (leo--get-html-section html regex))
              (unhex (rfc6068-unhexify-string section)))
         (kill-buffer "*leo-html*")
         (with-temp-buffer
