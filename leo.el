@@ -193,6 +193,7 @@ agent."
     (when (require 'helm-dictionary nil :noerror)
       (define-key map (kbd "h") #'leo-search-in-helm-dictionary-de))
     (define-key map (kbd "d") #'leo-browse-url-duden)
+    (define-key map (kbd "D") #'leo-browse-url-dwds)
     (when (require 'reverso nil :no-error)
       (define-key map (kbd "r") #'leo-browse-term-reverso))
     (when (require 'wordreference nil :no-error)
@@ -213,14 +214,15 @@ agent."
    [("s" "search again" leo-translate-word)
     ("b" "browse results" leo-browse-url-results)
     ("f" "jump to forums" leo-jump-to-forum-results)
-    ("c" "search with dictcc" leo-search-term-with-dictcc)
-    ("l" "search with linguee" leo-browse-url-linguee)]
+    ("c" "search with dictcc.el" leo-search-term-with-dictcc)
+    ("l" "browse on linguee" leo-browse-url-linguee)]
    [("h" "search with helm dict" leo-search-in-helm-dictionary-de)
-    ("d" "search with duden" leo-browse-url-duden)
-    ("r" "search with reverso" leo-browse-term-reverso)
+    ("d" "browse on duden" leo-browse-url-duden)
+    ("r" "search with reverso.el" leo-browse-term-reverso)
     ("w" "search with wordreference.el" leo-search-in-wordreference)
     ("k" "search with wikionary-bro" leo-browse-term-wiktionary-bro)]
-   [("<" "left side only" leo-translate-left-side-only)
+   [("D" "browse on dwds.de" leo-browse-term-dwds)
+    ("<" "left side only" leo-translate-left-side-only)
     (">" "right side only" leo-translate-right-side-only)]])
 
 (defvar leo-result-search-map
@@ -881,16 +883,28 @@ with a prefix arguemnt."
                          query-final))))
 
 (defun leo-browse-url-duden ()
-  "Search for current term in browser with Duden.de."
+  "Search for current term in browser with Duden.de.
+Only works for German terms."
   (interactive)
+  (leo-browse-url-term "https://www.duden.de/suchen/dudenonline/"))
+
+(defun leo-browse-url-dwds ()
+  "Search for current term in browser with dwds.de.
+Only works for German terms."
+  (interactive)
+  (leo-browse-url-term "https://www.dwds.de/?from=wb&q="))
+
+(defun leo-browse-url-term (url)
+  "Browse URL as a query for the current search term.
+If the current search is multiple terms, concatenate them with
+\"+\" as a separator.
+The query is concatenated to URL."
   (let* ((query (plist-get leo--results-info 'term))
          (query-split (split-string query " "))
          (query-final (if (not (> (length query-split) 1))
                           query
                         (string-join query-split "+"))))
-    (browse-url-generic (concat
-                         "https://www.duden.de/suchen/dudenonline/"
-                         query-final))))
+    (browse-url-generic (concat url query-final))))
 
 (defun leo-search-in-helm-dictionary-de ()
   "Search for current query in `helm-dictionary'."
@@ -899,9 +913,9 @@ with a prefix arguemnt."
                        "\\b")))
     (helm-dictionary leo-helm-dictionary-name query t)))
 
-
 (defun leo-browse-term-reverso ()
-  "Search for current term with reverso.com."
+  "Search for current term with reverso.el."
+  ;; FIXME: currently this errors unless we eval leo.el buffer:
   (interactive)
   (let* ((query (plist-get leo--results-info 'term)))
     (reverso--translate
@@ -1033,12 +1047,33 @@ Word or phrase at point is determined by button text property."
 (defun leo-render-forum-entry ()
   "Render the forum entry at point in a temporary buffer."
   (interactive)
-  (leo--render-html "<section")) ; "</section>"))
+  (leo--render-html "<section"))
+;;"<div class=\"wgt-content\""))
 
 (defun leo-render-inflex-tbl ()
   "Render inflection table at point in a temporary buffer."
   (interactive)
   (leo--render-html "<div class=\"p-large\">"))
+
+(require 'sgml-mode)
+
+(defun leo--get-html-section (html regex)
+  "Return HTML tree whose beginning matches REGEX."
+  (with-current-buffer (get-buffer-create "*leo-html*")
+    (switch-to-buffer (current-buffer))
+    (erase-buffer)
+    (insert html)
+    ;; (web-mode)
+    (mhtml-mode)
+    (goto-char (point-min))
+    (save-match-data
+      (buffer-substring-no-properties
+       (progn (re-search-forward regex)
+              (match-beginning 0))
+       (progn (goto-char (match-beginning 0))
+              ;; (forward-sexp)
+              (sgml-skip-tag-forward 1)
+              (point))))))
 
 (defun leo--render-html (regex)
   "Fetch `shr-url' at point and render html in a temporary buffer.
@@ -1049,19 +1084,7 @@ REGEX should match the opening HTML of the tag to render."
                      (re-search-forward "\n\n")
                      (buffer-substring-no-properties (point) (point-max))))
              ;; with-temp-buffer breaks forward-sexp in html:
-             (section (with-current-buffer (get-buffer-create "*leo-html*")
-                        (switch-to-buffer (current-buffer))
-                        (erase-buffer)
-                        (insert html)
-                        (web-mode) ; so forward-sexp works
-                        (goto-char (point-min))
-                        (save-match-data
-                          (buffer-substring-no-properties
-                           (progn (re-search-forward regex)
-                                  (match-beginning 0))
-                           (progn (goto-char (match-beginning 0))
-                                  (forward-sexp)
-                                  (point))))))
+             (section (leo--get-html-section html regex))
              (unhex (rfc6068-unhexify-string section)))
         (kill-buffer "*leo-html*")
         (with-temp-buffer
