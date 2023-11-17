@@ -210,18 +210,18 @@ agent."
     ("<backtab>" "prev button" backward-button)
     ("," "previous heading" leo-previous-heading)
     ("." "next heading" leo-next-heading)
-    ("t" "search again" leo-translate-word)]
-   [("s" "search again" leo-translate-word)
-    ("b" "browse results" leo-browse-url-results)
+    ("t" "search again" leo-translate-word)
+    ("s" "search again" leo-translate-word)]
+   [("b" "browse results" leo-browse-url-results)
     ("f" "jump to forums" leo-jump-to-forum-results)
-    ("c" "search with dictcc.el" leo-search-term-with-dictcc)
-    ("l" "browse on linguee" leo-browse-url-linguee)]
-   [("h" "search with helm dict" leo-search-in-helm-dictionary-de)
-    ("d" "browse on duden" leo-browse-url-duden)
-    ("r" "search with reverso.el" leo-browse-term-reverso)
-    ("w" "search with wordreference.el" leo-search-in-wordreference)
-    ("k" "search with wikionary-bro" leo-browse-term-wiktionary-bro)]
-   [("D" "browse on dwds.de" leo-browse-term-dwds)
+    ("c" "search dictcc.el" leo-search-term-with-dictcc)
+    ("l" "browse on linguee" leo-browse-url-linguee)
+    ("h" "search helm dict" leo-search-in-helm-dictionary-de)
+    ("d" "browse on duden" leo-browse-url-duden)]
+   [("r" "search reverso.el" leo-browse-term-reverso)
+    ("w" "search wordreference.el" leo-search-in-wordreference)
+    ("k" "search wikionary-bro" leo-browse-term-wiktionary-bro)
+    ("D" "browse on dwds.de" leo-browse-url-dwds)
     ("<" "left side only" leo-translate-left-side-only)
     (">" "right side only" leo-translate-right-side-only)]])
 
