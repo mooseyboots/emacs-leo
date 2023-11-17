@@ -221,7 +221,7 @@ agent."
     ("r" "search with reverso.el" leo-browse-term-reverso)
     ("w" "search with wordreference.el" leo-search-in-wordreference)
     ("k" "search with wikionary-bro" leo-browse-term-wiktionary-bro)]
-   [("D" "browse on dwds.de" leo-browse-term-dwds)
+   [("D" "browse on dwds.de" leo-browse-url-dwds)
     ("<" "left side only" leo-translate-left-side-only)
     (">" "right side only" leo-translate-right-side-only)]])
 
