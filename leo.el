@@ -80,6 +80,9 @@ It must match the key of one of the dictionaries in
 (when (require 'pdf-tools nil :no-error)
   (declare-function pdf-view-active-region-text "pdf-view"))
 
+(when (require 'sdcv nil :no-error)
+  (declare-function sdcv-search-input "sdcv"))
+
 (defvar url-user-agent)
 
 (defgroup leo nil
@@ -887,6 +890,19 @@ with a prefix arguemnt."
 Only works for German terms."
   (interactive)
   (leo-browse-url-term "https://www.duden.de/suchen/dudenonline/"))
+
+(defun leo-browse-term-sdcv ()
+  "Search for current term with sdcv.el."
+  (interactive)
+  (let* ((query (plist-get leo--results-info 'term))
+         (query-split (split-string query " "))
+         (query-final (if (not (> (length query-split) 1))
+                          query
+                        (string-join query-split " "))))
+    (condition-case x
+        (sdcv-search-input query-final)
+      (void-function (message "Looks like sdcv.el not installed. Error: %s"
+                              (error-message-string x))))))
 
 (defun leo-browse-url-dwds ()
   "Search for current term in browser with dwds.de.
