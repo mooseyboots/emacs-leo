@@ -199,6 +199,8 @@ agent."
     (define-key map (kbd "D") #'leo-browse-url-dwds)
     (when (require 'reverso nil :no-error)
       (define-key map (kbd "r") #'leo-browse-term-reverso))
+    (when (require 'sdcv nil :no-error)
+      (define-key map (kbd "S") #'leo-browse-term-sdcv))
     (when (require 'wordreference nil :no-error)
       (define-key map (kbd "w") #'leo-search-in-wordreference))
     (when (require 'wiktionary-bro nil :no-error)
@@ -1229,14 +1231,24 @@ display if there are no results."
    (concat
     (substitute-command-keys
      "\\`t'/\\`s': search again, prefix: set language,\
+ \\`v': paste and search,\
  \\`.'/\\`,': next/prev heading, \\`f': jump to forums, \\`b': view in browser,\
  \\`<'/\\`>': search in left/right lang only, \\`l': search on linguee.de, \\`d': search on duden.de")
     (when (require 'helm-dictionary nil :noerror)
       (substitute-command-keys
        ", \\`h': search in helm-dictionary"))
+    (when (require 'reveso nil :noerror)
+      (substitute-command-keys
+       ", \\`r': search in reverso.el"))
+    (when (require 'sdcv nil :noerror)
+      (substitute-command-keys
+       ", \\`S': search in sdcv.el"))
     (when (require 'dictcc nil :noerror)
       (substitute-command-keys
-       ", \\`c': search with dictcc.el")))))
+       ", \\`c': search with dictcc.el"))
+    (when (require 'wiktionary-bro nil :noerror)
+      (substitute-command-keys
+       ", \\`k': search with wiktionary-bro.el")))))
 
 (defun leo-translate-single-side (side)
   "Retranslate last term searching only in SIDE.
