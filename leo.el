@@ -80,6 +80,9 @@ It must match the key of one of the dictionaries in
 (when (require 'pdf-tools nil :no-error)
   (declare-function pdf-view-active-region-text "pdf-view"))
 
+(when (require 'sdcv nil :no-error)
+  (declare-function sdcv-search-input "sdcv"))
+
 (defvar url-user-agent)
 
 (defgroup leo nil
@@ -196,6 +199,8 @@ agent."
     (define-key map (kbd "D") #'leo-browse-url-dwds)
     (when (require 'reverso nil :no-error)
       (define-key map (kbd "r") #'leo-browse-term-reverso))
+    (when (require 'sdcv nil :no-error)
+      (define-key map (kbd "S") #'leo-browse-term-sdcv))
     (when (require 'wordreference nil :no-error)
       (define-key map (kbd "w") #'leo-search-in-wordreference))
     (when (require 'wiktionary-bro nil :no-error)
@@ -888,6 +893,19 @@ Only works for German terms."
   (interactive)
   (leo-browse-url-term "https://www.duden.de/suchen/dudenonline/"))
 
+(defun leo-browse-term-sdcv ()
+  "Search for current term with sdcv.el."
+  (interactive)
+  (let* ((query (plist-get leo--results-info 'term))
+         (query-split (split-string query " "))
+         (query-final (if (not (> (length query-split) 1))
+                          query
+                        (string-join query-split " "))))
+    (condition-case x
+        (sdcv-search-input query-final)
+      (void-function (message "Looks like sdcv.el not installed. Error: %s"
+                              (error-message-string x))))))
+
 (defun leo-browse-url-dwds ()
   "Search for current term in browser with dwds.de.
 Only works for German terms."
@@ -1209,13 +1227,28 @@ display if there are no results."
   (unless (equal (buffer-name (current-buffer)) "*leo*")
     (switch-to-buffer-other-window "*leo*"))
   (goto-char (point-min))
-  (message (concat "'t'/'s': search again, prefix: set language,\
- '.'/',': next/prev heading, 'f': jump to forums, 'b': view in browser,\
- '<'/'>': search in left/right lang only, 'l': search on linguee.de, 'd': search on duden.de"
-                   (when (require 'helm-dictionary nil :noerror)
-                     ", 'h': search in helm-dictionary")
-                   (when (require 'dictcc nil :noerror)
-                     ", 'c': search with dictcc.el"))))
+  (message
+   (concat
+    (substitute-command-keys
+     "\\`t'/\\`s': search again, prefix: set language,\
+ \\`v': paste and search,\
+ \\`.'/\\`,': next/prev heading, \\`f': jump to forums, \\`b': view in browser,\
+ \\`<'/\\`>': search in left/right lang only, \\`l': search on linguee.de, \\`d': search on duden.de")
+    (when (require 'helm-dictionary nil :noerror)
+      (substitute-command-keys
+       ", \\`h': search in helm-dictionary"))
+    (when (require 'reveso nil :noerror)
+      (substitute-command-keys
+       ", \\`r': search in reverso.el"))
+    (when (require 'sdcv nil :noerror)
+      (substitute-command-keys
+       ", \\`S': search in sdcv.el"))
+    (when (require 'dictcc nil :noerror)
+      (substitute-command-keys
+       ", \\`c': search with dictcc.el"))
+    (when (require 'wiktionary-bro nil :noerror)
+      (substitute-command-keys
+       ", \\`k': search with wiktionary-bro.el")))))
 
 (defun leo-translate-single-side (side)
   "Retranslate last term searching only in SIDE.
