@@ -910,7 +910,8 @@ Only works for German terms."
   "Search for current term in browser with dwds.de.
 Only works for German terms."
   (interactive)
-  (leo-browse-url-term "https://www.dwds.de/?from=wb&q="))
+  (leo-browse-url-term "https://www.dwds.de/wb/"))
+;;   (leo-browse-url-term "https://www.dwds.de/?from=wb&q="))
 
 (defun leo-browse-url-term (url)
   "Browse URL as a query for the current search term.
