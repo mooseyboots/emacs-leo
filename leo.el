@@ -254,6 +254,7 @@ agent."
     (define-key map [mouse-2] #'leo-render-forum-entry)
     (define-key map (kbd "RET") #'leo-render-forum-entry)
     (define-key map (kbd "b") #'leo-shr-browse-url)
+    (define-key map (kbd "C") #'shr-copy-url)
     ;; override shr-browse-url, which is already RET:
     (define-key map (kbd "v") #'leo-paste-to-search)
     map))
