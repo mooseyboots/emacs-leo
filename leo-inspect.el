@@ -1,8 +1,8 @@
 ;;; leo.el --- Inspection functions for for emacs-leo.el -*- lexical-binding:t -*-
 ;;
-;; Copyright (C) 2021 Marty Hiatt <martianhiatus AT riseup.net>
+;; Copyright (C) 2021 Marty Hiatt <mousebot@disroot.org>
 ;;
-;; Author: Marty Hiatt <martianhiatus AT riseup.net>
+;; Author: Marty Hiatt <mousebot@disroot.org>
 ;; Created: Sept 2021
 ;;
 ;; Package-Requires: ((emacs "25.1"))

@@ -1,10 +1,10 @@
 ;;; leo.el --- Interface for dict.leo.org -*- lexical-binding:t -*-
 ;;
 ;; Copyright (C) 2020 M.T. Enders <michael AT michael-enders.com>
-;;               2021 Marty Hiatt <martianhiatus AT riseup.net>
+;;               2021 Marty Hiatt <mousebot@disroot.org>
 ;;
 ;; Author: M.T. Enders <michael AT michael-enders.com>
-;;         Marty Hiatt <martianhiatus AT riseup.net>
+;;         Marty Hiatt <mousebot@disroot.org>
 ;; Created: 21 Oct 2020
 ;;
 ;; Package-Requires: ((emacs "28.1") (s "1.12.0") (aio "1.0"))
