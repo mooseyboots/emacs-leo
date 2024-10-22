@@ -83,6 +83,10 @@ It must match the key of one of the dictionaries in
 (when (require 'sdcv nil :no-error)
   (declare-function sdcv-search-input "sdcv"))
 
+(when (require 'consult-search nil :noerror)
+  (declare-function consult-search-ddg "consult-search")
+  (declare-function consult-search-wiki "consult-search"))
+
 (defvar url-user-agent)
 
 (defgroup leo nil
@@ -189,6 +193,9 @@ agent."
     (define-key map (kbd "<") #'leo-translate-left-side-only)
     (define-key map (kbd ">") #'leo-translate-right-side-only)
     (define-key map (kbd "v") #'leo-paste-to-search)
+    (when (require 'consult-search nil :noerror)
+      (define-key map (kbd "o") #'leo-browse-term-consult-search-ddg)
+      (define-key map (kbd "i") #'leo-browse-term-consult-search-wiki))
     (define-key map (kbd "?") #'leo-dispatch)
     (when (require 'dictcc nil :noerror)
       (define-key map (kbd "c") #'leo-search-term-with-dictcc))
@@ -945,6 +952,18 @@ The query is concatenated to URL."
      (lambda (data)
        (reverso--with-buffer
          (reverso--translate-render query data))))))
+
+(defun leo-browse-term-consult-search-ddg ()
+  "Search for current term with `consult-search-ddg'."
+  (interactive)
+  (let* ((query (plist-get leo--results-info 'term)))
+    (consult-search-ddg query)))
+
+(defun leo-browse-term-consult-search-wiki ()
+  "Search for current term with `consult-search-wiki'."
+  (interactive)
+  (let* ((query (plist-get leo--results-info 'term)))
+    (consult-search-wiki query)))
 
 (defun leo-search-in-wordreference ()
   "Search for current query in `wordreference.el'.
