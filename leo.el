@@ -1346,8 +1346,16 @@ DEFAULT-INPUT is default text to search for."
                           leo-language))                      ;fallback
          (region (leo--get-region))
          (word (or default-input
-                   (read-string (format "Leo search (%s): " (or region (current-word) ""))
-                                nil nil (or region (current-word))))))
+                   (if (require consult nil :no-error)
+                       (let ((consult-async-input-debounce 0.5))
+                         (consult--read
+                          (consult--dynamic-collection
+                           #'leo-completion-cands)
+                          :prompt "Leo search: "))
+                     (read-string
+                      (format "Leo search (%s): "
+                              (or region (current-word) ""))
+                      nil nil (or region (current-word)))))))
     (if prefix
         ;; if prefix: prompt for language to search for:
         (let ((lang-prefix (completing-read
@@ -1359,6 +1367,28 @@ DEFAULT-INPUT is default text to search for."
                           word))
       ;; else normal search:
       (leo--translate lang-stored word))))
+
+;; (defun leo-with-completion (query)
+;;   ""
+;;   (interactive "sLeo: ")
+;;   (let* ((cands (leo-completion-cands query))
+;;          (choice (if cands
+;;                      (completing-read "LEO: " cands)
+;;                    query)))
+;;     (leo--translate leo-language choice)))
+
+(defun leo-completion-cands (input)
+  ""
+  (let* ((url
+          (format "https://www.leo.org/dictQuery/m-query/conf/ende/query.conf/strlist.json?q=%s" input))
+         (resp (url-retrieve-synchronously url))
+         (json-array-type 'list)
+         (data (with-current-buffer resp
+                 (goto-char (point-min))
+                 (re-search-forward "\n\n")
+                 (json-read))))
+    ;; TODO: handle diacritics
+    (cadr data)))
 
 (define-derived-mode leo-mode special-mode "leo"
   :group 'leo
