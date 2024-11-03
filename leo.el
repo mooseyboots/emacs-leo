@@ -1355,7 +1355,9 @@ DEFAULT-INPUT is default text to search for."
          (region (leo--get-region))
          (word (or default-input
                    (if (require 'consult nil :no-error)
-                       (let ((consult-async-input-debounce 0.5))
+                       (let ((consult-async-input-debounce 0.7)
+                             ;; (consult-async-input-throttle 0.7)
+                             )
                          (consult--read
                           (consult--dynamic-collection
                            #'leo-completion-cands)
