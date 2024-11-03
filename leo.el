@@ -151,6 +151,11 @@ agent."
           (alist         :tag "Regexp/function association list"
                          :key-type regexp :value-type function)))
 
+(defcustom leo-search-suggestions t
+  "Whether to provide search suggestions while entering a query.
+If consult is installed and this is t, use consult which is more flexible.
+If consult is not installed, use built-in dynamic completion.
+If nil, just read a query string.")
 
 (defface leo-link-face
   '((t :inherit warning))
@@ -1354,18 +1359,7 @@ DEFAULT-INPUT is default text to search for."
                           leo-language))                      ;fallback
          (region (leo--get-region))
          (word (or default-input
-                   (if (require 'consult nil :no-error)
-                       (let ((consult-async-input-debounce 0.7)
-                             ;; (consult-async-input-throttle 0.7)
-                             )
-                         (consult--read
-                          (consult--dynamic-collection
-                           #'leo-completion-suggestions)
-                          :prompt "Leo search: "))
-                     (read-string
-                      (format "Leo search (%s): "
-                              (or region (current-word) ""))
-                      nil nil (or region (current-word)))))))
+                   (leo-read-query))))
     (if prefix
         ;; if prefix: prompt for language to search for:
         (let ((lang-prefix (completing-read
@@ -1378,16 +1372,35 @@ DEFAULT-INPUT is default text to search for."
       ;; else normal search:
       (leo--translate lang-stored word))))
 
-;; (defun leo-with-completion (query)
-;;   ""
-;;   (interactive "sLeo: ")
-;;   (let* ((cands (leo-completion-suggestions query))
-;;          (choice (if cands
-;;                      (completing-read "LEO: " cands)
-;;                    query)))
-;;     (leo--translate leo-language choice)))
+(defun leo-read-query ()
+  "Return a leo search query, maybe with search suggestions completion."
+  (cond ((not leo-search-suggestions)
+         ;; no suggestions:
+         (read-string
+          (format "Leo search (%s): "
+                  (or region (current-word) ""))
+          nil nil (or region (current-word))))
+        ((require 'consult nil :no-error)
+         ;; consult dynamic completion:
+         (let ((consult-async-input-debounce 0.7))
+           ;; (consult-async-input-throttle 0.7)
+           (consult--read (consult--dynamic-collection
+                           #'leo-get--suggestions)
+                          :prompt "Leo search: ")))
+        (t ;; built-in dynamic completion:
+         (leo-translate-suggest))))
 
-(defun leo-completion-suggestions (input)
+(defun leo-translate-suggest ()
+  "Call completing read with leo search suggestions."
+  (completing-read
+   "Leo search: "
+   (completion-table-dynamic
+    (lambda (str)
+      (unless (string-empty-p str)
+        (when (>= 3 (length str))
+          (leo-get--suggestions str)))))))
+
+(defun leo-get--suggestions (input)
   "Return Leo search suggestions for INPUT."
   (let* ((url
           (format "https://www.leo.org/dictQuery/m-query/conf/ende/query.conf/strlist.json?q=%s" input))
