@@ -83,6 +83,14 @@ It must match the key of one of the dictionaries in
 (when (require 'sdcv nil :no-error)
   (declare-function sdcv-search-input "sdcv"))
 
+(when (require 'consult-search nil :noerror)
+  (declare-function consult-search-ddg "consult-search")
+  (declare-function consult-search-wiki "consult-search"))
+
+(when (require 'consult nil :no-error)
+  (declare-function consult--dynamic-collection "consult")
+  (declare-function consult--read "consult"))
+
 (defvar url-user-agent)
 
 (defgroup leo nil
@@ -189,6 +197,9 @@ agent."
     (define-key map (kbd "<") #'leo-translate-left-side-only)
     (define-key map (kbd ">") #'leo-translate-right-side-only)
     (define-key map (kbd "v") #'leo-paste-to-search)
+    (when (require 'consult-search nil :noerror)
+      (define-key map (kbd "o") #'leo-browse-term-consult-search-ddg)
+      (define-key map (kbd "i") #'leo-browse-term-consult-search-wiki))
     (define-key map (kbd "?") #'leo-dispatch)
     (when (require 'dictcc nil :noerror)
       (define-key map (kbd "c") #'leo-search-term-with-dictcc))
@@ -216,9 +227,13 @@ agent."
     ("," "previous heading" leo-previous-heading)
     ("." "next heading" leo-next-heading)
     ("t" "search again" leo-translate-word)
-    ("s" "search again" leo-translate-word)]
-   [("b" "browse results" leo-browse-url-results)
-    ("f" "jump to forums" leo-jump-to-forum-results)
+    ("s" "search again" leo-translate-word)
+    ("<" "left side only" leo-translate-left-side-only)
+    (">" "right side only" leo-translate-right-side-only)]
+   [("f" "jump to forums" leo-jump-to-forum-results)
+    ("v" "paste and search" leo-paste-to-search)
+    ("C" "copy result url" shr-copy-url)
+    ("b" "browse on leo.de" leo-browse-url-results)
     ("c" "search dictcc.el" leo-search-term-with-dictcc)
     ("l" "browse on linguee" leo-browse-url-linguee)
     ("h" "search helm dict" leo-search-in-helm-dictionary-de)
@@ -227,8 +242,8 @@ agent."
     ("w" "search wordreference.el" leo-search-in-wordreference)
     ("k" "search wikionary-bro" leo-browse-term-wiktionary-bro)
     ("D" "browse on dwds.de" leo-browse-url-dwds)
-    ("<" "left side only" leo-translate-left-side-only)
-    (">" "right side only" leo-translate-right-side-only)]])
+    ("o" "search with consult-search ddg" leo-browse-term-consult-search-ddg)
+    ("i" "search with consult-search wiki" leo-browse-term-consult-search-wiki)]])
 
 (defvar leo-result-search-map
   (let ((map (make-sparse-keymap)))
@@ -946,6 +961,18 @@ The query is concatenated to URL."
        (reverso--with-buffer
          (reverso--translate-render query data))))))
 
+(defun leo-browse-term-consult-search-ddg ()
+  "Search for current term with `consult-search-ddg'."
+  (interactive)
+  (let* ((query (plist-get leo--results-info 'term)))
+    (consult-search-ddg query)))
+
+(defun leo-browse-term-consult-search-wiki ()
+  "Search for current term with `consult-search-wiki'."
+  (interactive)
+  (let* ((query (plist-get leo--results-info 'term)))
+    (consult-search-wiki query)))
+
 (defun leo-search-in-wordreference ()
   "Search for current query in `wordreference.el'.
 You need to install it for this to work."
@@ -1327,8 +1354,18 @@ DEFAULT-INPUT is default text to search for."
                           leo-language))                      ;fallback
          (region (leo--get-region))
          (word (or default-input
-                   (read-string (format "Leo search (%s): " (or region (current-word) ""))
-                                nil nil (or region (current-word))))))
+                   (if (require 'consult nil :no-error)
+                       (let ((consult-async-input-debounce 0.7)
+                             ;; (consult-async-input-throttle 0.7)
+                             )
+                         (consult--read
+                          (consult--dynamic-collection
+                           #'leo-completion-suggestions)
+                          :prompt "Leo search: "))
+                     (read-string
+                      (format "Leo search (%s): "
+                              (or region (current-word) ""))
+                      nil nil (or region (current-word)))))))
     (if prefix
         ;; if prefix: prompt for language to search for:
         (let ((lang-prefix (completing-read
@@ -1340,6 +1377,30 @@ DEFAULT-INPUT is default text to search for."
                           word))
       ;; else normal search:
       (leo--translate lang-stored word))))
+
+;; (defun leo-with-completion (query)
+;;   ""
+;;   (interactive "sLeo: ")
+;;   (let* ((cands (leo-completion-suggestions query))
+;;          (choice (if cands
+;;                      (completing-read "LEO: " cands)
+;;                    query)))
+;;     (leo--translate leo-language choice)))
+
+(defun leo-completion-suggestions (input)
+  "Return Leo search suggestions for INPUT."
+  (let* ((url
+          (format "https://www.leo.org/dictQuery/m-query/conf/ende/query.conf/strlist.json?q=%s" input))
+         (resp (url-retrieve-synchronously url))
+         (json-array-type 'list)
+         (raw (with-current-buffer resp
+                (goto-char (point-min))
+                (re-search-forward "\n\n")
+                (decode-coding-string
+                 (buffer-substring-no-properties (point) (point-max))
+                 'utf-8)))
+         (data (json-read-from-string raw)))
+    (cadr data)))
 
 (define-derived-mode leo-mode special-mode "leo"
   :group 'leo
