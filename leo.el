@@ -87,6 +87,10 @@ It must match the key of one of the dictionaries in
   (declare-function consult-search-ddg "consult-search")
   (declare-function consult-search-wiki "consult-search"))
 
+(when (require 'consult nil :no-error)
+  (declare-function consult--dynamic-collection "consult")
+  (declare-function consult--read "consult"))
+
 (defvar url-user-agent)
 
 (defgroup leo nil
@@ -1346,7 +1350,7 @@ DEFAULT-INPUT is default text to search for."
                           leo-language))                      ;fallback
          (region (leo--get-region))
          (word (or default-input
-                   (if (require consult nil :no-error)
+                   (if (require 'consult nil :no-error)
                        (let ((consult-async-input-debounce 0.5))
                          (consult--read
                           (consult--dynamic-collection
