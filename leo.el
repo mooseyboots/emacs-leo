@@ -1360,7 +1360,7 @@ DEFAULT-INPUT is default text to search for."
                              )
                          (consult--read
                           (consult--dynamic-collection
-                           #'leo-completion-cands)
+                           #'leo-completion-suggestions)
                           :prompt "Leo search: "))
                      (read-string
                       (format "Leo search (%s): "
@@ -1381,23 +1381,25 @@ DEFAULT-INPUT is default text to search for."
 ;; (defun leo-with-completion (query)
 ;;   ""
 ;;   (interactive "sLeo: ")
-;;   (let* ((cands (leo-completion-cands query))
+;;   (let* ((cands (leo-completion-suggestions query))
 ;;          (choice (if cands
 ;;                      (completing-read "LEO: " cands)
 ;;                    query)))
 ;;     (leo--translate leo-language choice)))
 
-(defun leo-completion-cands (input)
-  ""
+(defun leo-completion-suggestions (input)
+  "Return Leo search suggestions for INPUT."
   (let* ((url
           (format "https://www.leo.org/dictQuery/m-query/conf/ende/query.conf/strlist.json?q=%s" input))
          (resp (url-retrieve-synchronously url))
          (json-array-type 'list)
-         (data (with-current-buffer resp
-                 (goto-char (point-min))
-                 (re-search-forward "\n\n")
-                 (json-read))))
-    ;; TODO: handle diacritics
+         (raw (with-current-buffer resp
+                (goto-char (point-min))
+                (re-search-forward "\n\n")
+                (decode-coding-string
+                 (buffer-substring-no-properties (point) (point-max))
+                 'utf-8)))
+         (data (json-read-from-string raw)))
     (cadr data)))
 
 (define-derived-mode leo-mode special-mode "leo"
