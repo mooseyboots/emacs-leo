@@ -227,9 +227,13 @@ agent."
     ("," "previous heading" leo-previous-heading)
     ("." "next heading" leo-next-heading)
     ("t" "search again" leo-translate-word)
-    ("s" "search again" leo-translate-word)]
-   [("b" "browse results" leo-browse-url-results)
-    ("f" "jump to forums" leo-jump-to-forum-results)
+    ("s" "search again" leo-translate-word)
+    ("<" "left side only" leo-translate-left-side-only)
+    (">" "right side only" leo-translate-right-side-only)]
+   [("f" "jump to forums" leo-jump-to-forum-results)
+    ("v" "paste and search" leo-paste-to-search)
+    ("C" "copy result url" shr-copy-url)
+    ("b" "browse on leo.de" leo-browse-url-results)
     ("c" "search dictcc.el" leo-search-term-with-dictcc)
     ("l" "browse on linguee" leo-browse-url-linguee)
     ("h" "search helm dict" leo-search-in-helm-dictionary-de)
@@ -238,8 +242,8 @@ agent."
     ("w" "search wordreference.el" leo-search-in-wordreference)
     ("k" "search wikionary-bro" leo-browse-term-wiktionary-bro)
     ("D" "browse on dwds.de" leo-browse-url-dwds)
-    ("<" "left side only" leo-translate-left-side-only)
-    (">" "right side only" leo-translate-right-side-only)]])
+    ("o" "search with consult-search ddg" leo-browse-term-consult-search-ddg)
+    ("i" "search with consult-search wiki" leo-browse-term-consult-search-wiki)]])
 
 (defvar leo-result-search-map
   (let ((map (make-sparse-keymap)))
