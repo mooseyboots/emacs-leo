@@ -1397,7 +1397,7 @@ DEFAULT-INPUT is default text to search for."
    (completion-table-dynamic
     (lambda (str)
       (unless (string-empty-p str)
-        (when (>= 3 (length str))
+        (when (length> str 2)
           (leo-get--suggestions str)))))))
 
 (defun leo-get--suggestions (input)
