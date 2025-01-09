@@ -1267,7 +1267,7 @@ display if there are no results."
      "\\`t'/\\`s': search again, prefix: set language,\
  \\`v': paste and search,\
  \\`.'/\\`,': next/prev heading, \\`f': jump to forums, \\`b': view in browser,\
- \\`<'/\\`>': search in left/right lang only, \\`l': search on linguee.de, \\`d': search on duden.de"
+ \\`<'/\\`>': search in left/right lang only, \\`l': search on linguee.de, \\`d': search on duden.de, \\`D': search on DWDS"
      (if (require 'helm-dictionary nil :noerror)
          ", \\`h': search in helm-dictionary"
        "")
