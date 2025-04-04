@@ -1267,7 +1267,7 @@ display if there are no results."
      "\\`t'/\\`s': search again, prefix: set language,\
  \\`v': paste and search,\
  \\`.'/\\`,': next/prev heading, \\`f': jump to forums, \\`b': view in browser,\
- \\`<'/\\`>': search in left/right lang only, \\`l': search on linguee.de, \\`d': search on duden.de"
+ \\`<'/\\`>': search in left/right lang only, \\`l': search on linguee.de, \\`d': search on duden.de, \\`D': search on DWDS"
      (if (require 'helm-dictionary nil :noerror)
          ", \\`h': search in helm-dictionary"
        "")
@@ -1397,7 +1397,7 @@ DEFAULT-INPUT is default text to search for."
    (completion-table-dynamic
     (lambda (str)
       (unless (string-empty-p str)
-        (when (>= 3 (length str))
+        (when (length> str 2)
           (leo-get--suggestions str)))))))
 
 (defun leo-get--suggestions (input)
